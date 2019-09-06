@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken")
 const JWT_KEY = require('../config').JWT_KEY
 
 exports.login = (req, res) => {
+  console.log(req.body)
   User.find({ name : req.body.name })
     .exec()
     .then(user => {
