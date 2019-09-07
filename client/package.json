@@ -14,8 +14,8 @@
     "axios": "^0.19.0",
     "pug": "^2.0.4",
     "pug-loader": "^2.4.0",
-    "sass": "^1.23.0-module.beta.1",
-    "sass-loader": "^8.0.0",
+    "sass": "^1.22.0",
+    "sass-loader": "^7.2.0",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1",
     "vuex": "^3.1.1"
