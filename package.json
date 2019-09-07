@@ -1,0 +1,12 @@
+{
+  "name": "battleship",
+  "version": "1.0.0",
+  "description": "A MEVN Project ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo 'Error: no test specified' && exit 1",
+    "start": "dev.bat"
+  },
+  "author": "",
+  "license": "ISC"
+}
