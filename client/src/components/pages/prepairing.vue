@@ -1,28 +1,31 @@
 <template lang="pug">
   div
-    .ships
-      button.ships-button(
+    .row
+      button.button(
         v-for="(ship, index) in unplacedShips"
         @click="selectedShipType=index"
         :disabled="ship.left === 0") {{ ship.name }} (осталось {{ship.left}})
 
-    .flip
-      button.flip-button(@click="rotateShip(1,1)") повернуть
+    .row
+      button.button(@click="rotateShip(0,0)") повернуть
 
-    #battleground
-      .cell(
-        v-for="cell in battleground"
-        @mouseover="selectCells(cell.x, cell.y)"
-        @click="placeShip(cell.x, cell.y)"
-        @wheel.prevent="rotateShip(cell.x, cell.y)"
-        :class="cell.type"
-      )
+    .row
+      .battleground
+        .cell(
+          v-for="(cell, index) in battleground"
+          :key="cell.x + cell.y * 10"
+          @mouseover="selectCells(cell.x, cell.y)"
+          @click="placeShip(cell.x, cell.y)"
+          @wheel.prevent="rotateShip(cell.x, cell.y)"
+          :class="cell.type"
+        )
 
-    .start-game
-      button(
-        :disabled="!canStart"
-        @click="startGame"
-      ) начать игру
+    .row
+      transition(name="fade")
+        button.button(
+          v-if="canStart"
+          @click="startGame"
+        ) начать игру
 </template>
 
 <script>
@@ -32,9 +35,7 @@ export default {
     return {
       canStart: false,
       playerShips: [],
-
       selectedCells: [],
-
       selectedShipType: 0,
       unplacedShips: [
         { name: 'Линкор', size: 4, left: 1 },
@@ -160,89 +161,52 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@mixin centererX {
-  position: absolute;
-  left: 50%;
-  margin-right: -50%;
-  transform: translateX(-50%);
+@import '../../assets/mixins';
+@import '../../assets/animations';
+
+.row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  flex-basis: 100%;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 10px 0;
 }
 
-@mixin centerer {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  margin-right: -50%;
-  transform: translate(-50%, -50%)
+.button {
+  @include buttonReset;
+  padding: 0.5em 1.2em;
+  border: 1px solid #aaa;
+  border-radius: 3px;
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+  margin: 2px;
 }
 
-@mixin buttonReset {
-   padding: 0;
-   border: none;
-   font: inherit;
-   color: inherit;
-   background-color: transparent;
-   cursor: pointer;
-}
-
-.ships {
-  @include centererX;
-  margin-top: 10px;
-
-  &-button {
-    @include buttonReset;
-    margin: 5px;
-    padding: 5px 10px;
-    border: 1px solid #aaa;
-    border-radius: 3px;
-  }
-}
-
-.flip {
-  @include centererX;
-  margin-top: 50px;
-
-  &-button {
-    @include buttonReset;
-    margin: 10px auto;
-    padding: 10px 30px;
-    border: 1px solid #aaa;
-    border-radius: 3px;
-  }
-}
-
-.start-game{
-  @include centererX;
-  bottom: 90px;
-
-  button {
-    padding: 10px 30px;
-  }
-}
-
-#battleground {
-  @include centerer;
-
+.battleground {
   width: 502px;
   height: 502px;
   border: 1px solid #aaa;
   border-radius: 7px;
-  // FlEX
   display: flex;
   flex-flow: row wrap;
-  justify-content: space-between;
-  align-content: center;
+
+  .cell{
+    max-width: 50px;
+    height: 50px;
+    border: 1px dotted rgba(#ccc, 0.5);
+    flex: 0 0 20%;
+    align-self: center;
+
+    &.empty{ background-color: #fff; }
+    &.selected { background-color: green; }
+    &.closed { background-color: red; }
+    &.blocked { background-color: pink; }
+  }
 }
 
-.cell{
-  max-width: 50px;
-  height: 50px;
-  border: 1px dotted rgba(#ccc, 0.5);
-  flex: 0 0 20%;
-  align-self: center;
-
-  &.empty{ background-color: #fff; }
-  &.selected { background-color: green; }
-  &.closed { background-color: red; }
-  &.blocked { background-color: pink; }
-}
 </style>

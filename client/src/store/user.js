@@ -3,7 +3,7 @@ import api from './api'
 export default {
   state: {
     status: '',
-    user: null,
+    user: localStorage.getItem('user') || '',
     token: localStorage.getItem('token') || ''
   },
   mutations: {
@@ -14,6 +14,8 @@ export default {
       state.status = 'success'
       state.token = token
       state.user = user
+      localStorage.setItem('token', token)
+      localStorage.setItem('user', user)
     },
     auth_error (state) {
       state.status = 'error'
@@ -30,8 +32,6 @@ export default {
         const response = await api().post('user/signup', data)
         const user = response.data.user
         const token = response.data.token
-        localStorage.setItem('token', token)
-        api().defaults.headers.common['Authorization'] = token
         commit('auth_success', token, user)
       } catch (error) {
         console.log(error)
@@ -43,7 +43,7 @@ export default {
       return new Promise((resolve, reject) => {
         commit('logout')
         localStorage.removeItem('token')
-        delete api().defaults.headers.common['Authorization']
+        delete api().defaults.headers.common['authorization']
         resolve()
       })
     }

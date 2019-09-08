@@ -1,8 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import login from '@/components/login'
-import prepairing from '@/components/prepairing'
-import game from '@/components/game'
+import login from '@/components/pages/login'
+import prepairing from '@/components/pages/prepairing'
+import game from '@/components/pages/game'
 
 Vue.use(Router)
 

@@ -15,6 +15,7 @@ app.use(cors())
 // Routes
 app.get("/", require("./routes/base"));
 app.use("/user", require("./routes/user"))
+app.use("/game", require("./routes/game"))
 
 // Erorrs
 app.use((req, res, next) => {

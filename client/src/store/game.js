@@ -1,4 +1,4 @@
-// import api from './api'
+import api from './api'
 
 export default {
   state: {
@@ -55,8 +55,15 @@ export default {
     setPlayerShips ({commit}, playerShipList) {
       commit('setPlayerShips', playerShipList)
     },
-    startGame ({commit}) {
+    async startGame ({ commit, state }) {
       commit('clearBlockedCells')
+      try {
+        commit('auth_request')
+        const response = await api().post('game/find', state.playerShipList)
+        console.log(response.data)
+      } catch (error) {
+        console.log(error)
+      }
     }
   },
   getters: {
