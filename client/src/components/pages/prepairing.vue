@@ -4,10 +4,17 @@
       button.button(
         v-for="(ship, index) in unplacedShips"
         @click="selectedShipType=index"
-        :disabled="ship.left === 0") {{ ship.name }} (осталось {{ship.left}})
+        v-if="ship.left") {{ ship.name }} (осталось {{ship.left}})
 
     .row
-      button.button(@click="rotateShip(0,0)") повернуть
+      button.button(
+        @click="rotateShip(0,0)"
+        v-if="!canStart && selectedShipType !== 3"
+        ) повернуть
+      button.button(
+        @click="randomSetup()"
+        v-if="!canStart") разместить случайно
+      button.button(@click="reset()") сбросить
 
     .row
       .battleground
@@ -53,13 +60,14 @@ export default {
     },
 
     selectCells (x, y) {
+      if (this.selectedShipType === null) { return }
+
       // reset battleground
       if (this.selectedCells.every(cell => cell.type === this.cellType.SELECTED)) {
         this.selectedCells.forEach(element => {
           element.type = this.cellType.EMPTY
         })
       }
-
       // filling selectedCells
       if (this.selectedShipType !== null) {
         this.selectedCells = this.battleground.filter(cell => {
@@ -95,7 +103,6 @@ export default {
           newShip.push(point)
         })
         this.playerShips.push({status: 'intact', ship: newShip}) // intact, wounded, killed
-
         // bloced cells on battleground
         this.battleground.filter(cell => {
           if (this.horisontalDirection) {
@@ -110,28 +117,64 @@ export default {
         }).forEach(element => {
           element.type = 'blocked'
         })
-
         // draw ship on battleground
         this.selectedCells.forEach(element => {
           element.type = 'closed'
         })
-
         // count unplacedShips
         this.currentTypeShip.left -= 1
-        if (this.currentTypeShip.left === 0) {
-          if (this.unplacedShips.every(element => {
-            return element.left === 0
-          })) {
-            this.canStart = true
-            this.$store.dispatch('setPlayerShips', this.playerShips)
-          }
-          this.selectedShipType = null
-        }
+        this._setShipType()
       }
+    },
+
+    _setShipType () {
+      this.selectedShipType = 0
+      while (this.selectedShipType < 4) {
+        if (this.currentTypeShip.left > 0) {
+          return
+        }
+        this.selectedShipType += 1
+      }
+      this.selectedShipType = null
+      this.canStart = true
+      this.$store.dispatch('setPlayerShips', this.playerShips)
+    },
+
+    randomSetup () {
+      let count = 0
+      while (!this.canStart) {
+        count++
+        if (count > 999) {
+          return
+        }
+        let x = Math.round(Math.random() * 10)
+        let y = Math.round(Math.random() * 10)
+        if (Math.round(Math.random())) {
+          this.$store.dispatch('rotateShip')
+        }
+        this.selectCells(x, y)
+        this.placeShip(x, y)
+        console.log(count)
+      }
+    },
+
+    reset () {
+      this.canStart = false
+      this.$store.dispatch('reset')
+      this.playerShips = []
+      this.selectedShipType = 0
+      this.unplacedShips = [
+        { name: 'Линкор', size: 4, left: 1 },
+        { name: 'Крейсер', size: 3, left: 2 },
+        { name: 'Эсминец', size: 2, left: 3 },
+        { name: 'Катер', size: 1, left: 4 }
+      ]
     },
 
     startGame () {
       this.$store.dispatch('startGame')
+        .then(() => this.$router.push('/game'))
+        .catch(err => console.log(err))
     }
   },
 
@@ -161,31 +204,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '../../assets/mixins';
 @import '../../assets/animations';
-
-.row {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  flex-basis: 100%;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  margin: 10px 0;
-}
-
-.button {
-  @include buttonReset;
-  padding: 0.5em 1.2em;
-  border: 1px solid #aaa;
-  border-radius: 3px;
-  display: inline-block;
-  text-align: center;
-  text-decoration: none;
-  margin: 2px;
-}
+@import '../../assets/common';
 
 .battleground {
   width: 502px;

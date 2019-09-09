@@ -1,0 +1,24 @@
+@import 'mixins';
+
+.row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  flex-basis: 100%;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 10px 0;
+}
+
+.button {
+  @include buttonReset;
+  padding: 0.5em 1.2em;
+  border: 1px solid #aaa;
+  border-radius: 3px;
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+  margin: 2px;
+}

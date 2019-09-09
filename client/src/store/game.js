@@ -35,6 +35,11 @@ export default {
         }
       })
     },
+    reset (state) {
+      state.playerField.forEach(element => {
+        element.type = state.cellType.EMPTY
+      })
+    },
     shotOnPlayerField (state, point) {
 
     }
@@ -49,6 +54,9 @@ export default {
       }
       commit('initPlayerField', tempArr)
     },
+    reset ({commit}) {
+      commit('reset')
+    },
     rotateShip ({commit}) {
       commit('rotateShip')
     },
@@ -56,13 +64,17 @@ export default {
       commit('setPlayerShips', playerShipList)
     },
     async startGame ({ commit, state }) {
-      commit('clearBlockedCells')
       try {
-        commit('auth_request')
         const response = await api().post('game/find', state.playerShipList)
-        console.log(response.data)
-      } catch (error) {
-        console.log(error)
+        const data = response.data
+        console.log(data)
+        if (response.status !== 200) {
+          return Promise.reject(new Error(response.status))
+        }
+        commit('clearBlockedCells')
+      } catch (err) {
+        console.log(err)
+        return Promise.reject(err)
       }
     }
   },

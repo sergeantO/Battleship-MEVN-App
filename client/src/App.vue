@@ -2,12 +2,20 @@
   <div id="app">
     <h1>Морской бой</h1>
     <router-view/>
+    <div class="app">
+      <p>{{ app }}</p>
+    </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'App'
+  name: 'App',
+  computed: {
+    app () {
+      return this.$store.getters.app
+    }
+  }
 }
 </script>
 
@@ -27,4 +35,12 @@ export default {
   color: #2c3e50;
   margin-top: 10px;
 }
+
+.app {
+  position: absolute;
+  bottom: 0.5em;
+  right: 0.5em;
+  font-size: 0.7em;
+}
+
 </style>

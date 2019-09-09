@@ -1,11 +1,11 @@
 <template lang="pug">
-  .contai
+.container
+  .row
     input(v-model="name" placeholder="Введите свое имя")
-    input(
-      type="button"
-      value="SignIn"
+  .row
+    button.button(
       @click="login"
-    )
+    ) SignIn
 </template>
 
 <script>
@@ -27,3 +27,22 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+@import '../../assets/common';
+
+.container {
+  margin: 5rem;
+}
+input {
+  border: none;
+  border-bottom: 1px solid #ccc;
+  width: 80%;
+  text-align: center;
+  line-height: 2.5;
+  font-size: 16px;
+  &:focus {
+    outline:none;
+  }
+}
+</style>

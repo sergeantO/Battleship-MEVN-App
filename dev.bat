@@ -1,1 +1,1 @@
-start "Three Tabs" "C:\Program Files\ConEmu\ConEmu64.exe" -runlist ^> cmd /k "color 02 & cd client & npm start" -cur_console:n:t:"client" ^|^|^| cmd /k "color 1F & mongod" -cur_console:s1T60Hn:t:"mongoDB" ^|^|^| cmd /k "color 4D & cd server & npm start" -cur_console:s2T50Vn:t:"server"
+start "Three Tabs" "C:\Program Files\ConEmu\ConEmu64.exe" -runlist ^> cmd /k "color 02 & cd client & npm start" -cur_console:n:t:"client" ^|^|^| cmd /k "color 1F & cd server & npm start" -cur_console:s1T60Hn:t:"API" ^|^|^| cmd /k "color 4D & mongod" -cur_console:s2T50Vn:t:"mongoDB"
