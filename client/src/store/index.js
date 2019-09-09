@@ -17,8 +17,6 @@ export default new Vuex.Store({
     App: `${name} ${version}`
   },
   getters: {
-    app: (state) => {
-      return state.App
-    }
+    app: state => state.App
   }
 })

@@ -1,4 +1,4 @@
-const common = require('./common').error
+const error = require('./common').error
 const User = require('../models/user')
 const jwt = require("jsonwebtoken")
 const JWT_KEY = require('../config').JWT_KEY
@@ -23,7 +23,7 @@ exports.login = (req, res) => {
             }, 
             JWT_KEY,
             {
-              expiresIn: "1h"
+              expiresIn: "365d"
             })
 
             console.log(token)
@@ -36,11 +36,6 @@ exports.login = (req, res) => {
           .catch(err => res.error(err))
       }
     })
-}
-
-exports.signin = (req, res) => {
-  console.log(req.userData)
-  res.status(200).json(req.userData)
 }
 
 exports.get_all = (req, res) => {

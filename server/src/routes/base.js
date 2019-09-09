@@ -1,9 +1,11 @@
 const router = require('express').Router()
 
 router.get('/', (req, res) => {
-  const endpoints = {
-
-  }
+  const endpoints = [
+    '/user/signup', 
+    '/game/find/:userId',
+    '/game/shot/:userId',
+  ]
   
   res.status(200).json(endpoints)
 })

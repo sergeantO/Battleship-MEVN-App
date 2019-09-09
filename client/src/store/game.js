@@ -63,11 +63,10 @@ export default {
     setPlayerShips ({commit}, playerShipList) {
       commit('setPlayerShips', playerShipList)
     },
-    async startGame ({ commit, state }) {
+    async startGame ({commit, state, rootState}) {
       try {
-        const response = await api().post('game/find', state.playerShipList)
-        const data = response.data
-        console.log(data)
+        const response = await api().post('game/find/' + rootState.user.user.id, state.playerShipList)
+        // const data = response.data
         if (response.status !== 200) {
           return Promise.reject(new Error(response.status))
         }
