@@ -21,7 +21,7 @@ export default {
         name: this.name
       }
       this.$store.dispatch('login', data)
-        .then(() => this.$router.push('/'))
+        .then(() => this.$router.replace('/'))
         .catch(err => console.log(err))
     }
   }

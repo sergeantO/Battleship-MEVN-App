@@ -102,7 +102,7 @@ export default {
           const point = {x: s.x, y: s.y}
           newShip.push(point)
         })
-        this.playerShips.push({status: 'intact', ship: newShip}) // intact, wounded, killed
+        this.playerShips.push({coords: newShip})
         // bloced cells on battleground
         this.battleground.filter(cell => {
           if (this.horisontalDirection) {
@@ -173,7 +173,7 @@ export default {
 
     startGame () {
       this.$store.dispatch('startGame')
-        .then(() => this.$router.push('/game'))
+        .then(() => this.$router.replace('/game'))
         .catch(err => console.log(err))
     }
   },
@@ -198,7 +198,7 @@ export default {
 
   mounted () {
     // INIT BUTTLEGROUND
-    this.$store.dispatch('initPlayerField')
+    this.$store.dispatch('initFields')
   }
 }
 </script>
