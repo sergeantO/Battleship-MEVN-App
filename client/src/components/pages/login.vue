@@ -20,9 +20,12 @@ export default {
       let data = {
         name: this.name
       }
-      this.$store.dispatch('login', data)
+      this.$store.dispatch('signup', data)
         .then(() => this.$router.replace('/'))
-        .catch(err => console.log(err))
+        .catch(err => {
+          this.$store.dispatch('setMessage', 'Ошибка')
+          console.log(err)
+        })
     }
   }
 }

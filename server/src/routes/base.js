@@ -4,18 +4,13 @@ router.get('/', (req, res) => {
   const endpoints = [
     {
       path: '/user/signup',
-      method: 'GET',
+      method: 'POST',
       tokenRequire: false,
       data: 'username',
     }, 
     {
       path: '/user/login',
       method: 'GET',
-      tokenRequire: true
-    },
-    {
-      path: '/user/logout',
-      method: 'POST',
       tokenRequire: true
     },
     {

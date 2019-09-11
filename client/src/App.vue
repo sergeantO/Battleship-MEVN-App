@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <h1>Морской бой</h1>
+    <h2>{{ msg }}</h2>
     <router-view/>
     <div class="app">
       <p>{{ app }}</p>
@@ -14,6 +15,9 @@ export default {
   computed: {
     app () {
       return this.$store.getters.app
+    },
+    msg () {
+      return this.$store.getters.message
     }
   }
 }

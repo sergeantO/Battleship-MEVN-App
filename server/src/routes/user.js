@@ -4,6 +4,5 @@ const checkAuth = require('../middleware/check-auth')
 
 router.post('/signup', UsersController.signup)
 router.get('/login', checkAuth, UsersController.login)
-router.post('/logout', checkAuth, UsersController.logout)
 
 module.exports = router

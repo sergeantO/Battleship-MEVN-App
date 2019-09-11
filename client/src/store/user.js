@@ -2,63 +2,61 @@ import api from './api'
 
 export default {
   state: {
-    status: '',
     user: {
-      name: localStorage.getItem('name') || '',
-      id: localStorage.getItem('id') || ''
+      name: '???',
+      id: '',
+      winrate: '50%'
     },
     token: localStorage.getItem('token') || ''
   },
   mutations: {
-    auth_request (state) {
-      state.status = 'loading'
+    setUser (state, user) {
+      state.user.id = user.id
+      state.user.name = user.name
+      state.user.winrate = user.winrate + '%'
     },
-    auth_success (state, data) {
-      state.status = 'success'
-      state.token = data.token
-      state.user.id = data.id
-      state.user.name = data.name
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('name', data.name)
-      localStorage.setItem('id', data.id)
-    },
-    auth_error (state) {
-      state.status = 'error'
-    },
-    logout (state) {
-      state.status = ''
-      state.token = ''
+    setToken (state, token) {
+      state.token = token
+      localStorage.setItem('token', token)
     }
   },
   actions: {
-    async login ({commit}, data) {
+    async login ({commit}) {
       try {
-        commit('auth_request')
-        const response = await api().post('user/signup', data)
+        const response = await api().get('user/login')
         const user = {
-          name: response.data.user.name,
-          id: response.data.user._id,
-          token: response.data.token
+          name: response.data.name,
+          id: response.data.id,
+          winrate: response.data.winrate
         }
-        console.log(user)
-        commit('auth_success', user)
-      } catch (error) {
-        console.log(error)
-        commit('auth_error')
-        localStorage.removeItem('token')
+        commit('setUser', user)
+      } catch (err) {
+        commit('setMessage', err)
       }
     },
+    signup ({commit}, data) {
+      return api().post('user/signup', data)
+        .then(response => {
+          console.log(response)
+          const user = {
+            name: response.data.name,
+            id: response.data.id,
+            winrate: response.data.winrate
+          }
+          commit('setUser', user)
+          commit('setToken', response.data.token)
+        })
+        .catch(err => {
+          commit('setMessage', err)
+          localStorage.removeItem('token')
+        })
+    },
     logout ({commit}) {
-      return new Promise((resolve, reject) => {
-        commit('logout')
-        localStorage.removeItem('token')
-        resolve()
-      })
+      api().post('user/logout')
     }
   },
   getters: {
     isLoggedIn: state => !!state.token,
-    authStatus: state => state.status,
-    idd: state => state.user.id
+    userName: state => state.user.name
   }
 }

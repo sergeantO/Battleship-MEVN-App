@@ -1,6 +1,6 @@
-const sender = require('./common')
+const sender = require('./sender')
 const Game = require('../models/game')
-const UsersController = require('./user-controller')
+// const UsersController = require('./user-controller')
 
 _get_one_game = (id) => {
   return Game.findById(id)
@@ -30,55 +30,39 @@ exports.find = async(req, res) => {
   }
 
   const userId = req.userData.userId
-  const user = await UsersController._get_one_user(userId)
-  if (user.status == 'online') {
-    const data = {
-      player2: userId,
-      player2_ships: playerShips
-    }
-    Game.findOneAndUpdate({ player1: { $exists: true, $nin: userId } }, data)
-      .exec()
-      .then(game => {
-        console.log(game)
-        let resp = { gameID: game._id }
-        if (game.turn == 2) {
-          resp.turn = true
-        } else {
-          resp.turn = false
-        }
-        UsersController._user_is_played(userId)
-        return sender(res).created('The game is ready', resp)
-      })
-      .catch(err => sender(res).error(err))
-  } else {
-    const rnd = await UsersController._get_rand_user()
-    if (!rnd || rnd._id.equals(userId)) { 
-      UsersController._user_is_online(userId)
-      return sender(res).notFound('No more players')
-    } 
-
-    // Create new game
-    let turn = Math.round(Math.random()) + 1 
-    const newgame = new Game({
-      player1: userId,
-      player1_ships: playerShips,
-      last_points: [],
-      turn: turn
-    })
-
-    newgame.save()
-      .then(game => {
-        let resp = { gameID: game._id }
-        if (game.turn == 1) {
-          resp.turn = true
-        } else {
-          resp.turn = false
-        }
-        UsersController._user_is_played(userId)
-        return sender(res).created('The game is created. Wait second player', resp)
-      })
-      .catch(err => sender(res).error(err))
+  const data = {
+    player2: userId,
+    player2_ships: playerShips
   }
+  Game.findOneAndUpdate({ player2: { $exists: false, $nin: userId } }, data)
+    .exec()
+    .then(game => {
+      let resp = { 
+        gameID: game._id, 
+        turn: game.turn == 2 
+      }
+      return sender(res).created('The game is ready', resp)
+    })
+    .catch(() => {
+      // Create new game
+      let turn = Math.round(Math.random()) + 1 
+      const newgame = new Game({
+        player1: userId,
+        player1_ships: playerShips,
+        last_points: [],
+        turn: turn
+      })
+
+      newgame.save()
+        .then(game => {
+          let resp = { 
+            gameID: game._id, 
+            turn: game.turn == 1 
+          }
+          return sender(res).created('The game is created. Wait second player', resp)
+        })
+        .catch(err => sender(res).error(err))
+    }) 
 }
 
 exports.shot = async(req, res) => { 
@@ -142,7 +126,8 @@ exports.shot = async(req, res) => {
     }
   }
 
-  playerShots.push({...point, ...shotResault})
+  let newPoint = {...point, status: shotResault}
+  playerShots.push(newPoint)
 
   let updateData
   if (playerNumber === 1) {
@@ -161,15 +146,21 @@ exports.shot = async(req, res) => {
     if (playerShips.every(ship => ship.status == 'killed')) {
       message = 'You win'
       updateData.winner = userId
-      UsersController._user_is_offline(game.player1)
-      UsersController._user_is_offline(game.player2)
     } 
   }
 
+  console.log(`Игрок ${playerNumber} (${userId}) ${shotResault} в точке ${point}`)
+  console.log(`Ход игрока ${turn}`)
+  console.log('Новые данные: '+updateData)
   Game.findByIdAndUpdate(gameId, updateData)
     .exec()
     .then(resault => {
-      return sender(res).ok(message, turn)
+      console.log('Изменения сохранены')
+      const resp = { 
+        point: newPoint, 
+        turn: turn == playerNumber 
+      }
+      return sender(res).ok(message, resp)
     })
     .catch(err => sender(res).error(err))
 }
@@ -196,24 +187,16 @@ exports.wait = async(req, res) => {
   } else if (userId == game.player2) {
     playerNumber = 2
     playerShots = game.player2_shots
-  } else {
-    return sender(res).badRequest('Not your game')
-  }
-
-  let turn
-  let message
-  if (game.turn == playerNumber) {
-    turn = true
-    message = 'shoot now'
-  } else {
-    turn = false
-    message = 'wait some more'
   }
 
   Game.findById(gameId)
     .exec()
     .then(() => {
-      return sender(res).ok(message, { playerShots, turn })
+      const resp = { 
+        playerShots,
+        turn: game.turn == playerNumber
+      }
+      return sender(res).ok('', resp)
     })
     .catch(err => sender(res).error(err))
       
@@ -241,11 +224,11 @@ exports.reconnect = async(req, res) => {
     return sender(res).badRequest('Not your game')
   }
 
-  if (game.turn == playerNumber) {
-    turn = true
-  } else {
-    turn = false
+  const resp = {
+    playerShots, 
+    enemyShots,
+    playerShips,
+    turn: game.turn == playerNumber
   }
-
-  return sender(res).ok('reconect is comleted', { playerShots, enemyShots })
+  return sender(res).ok('reconect is comleted', resp)
 }

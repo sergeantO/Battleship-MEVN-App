@@ -1,20 +1,24 @@
 <template lang="pug">
   div
     .row
-      .battleground
-        .cell(
-          v-for="(cell, index) in playerField"
-          :class="cell.type"
-        )
-
-      .battleground
-        .cell(
-          v-for="(cell, index) in enemyField"
-          @mouseover="selectCell(cell.x, cell.y)"
-          @click="shot()"
-          :class="cell.type"
-        )
-
+      .wrap
+        p {{ enemyName }}
+        .battleground
+          .cell(
+            v-for="(cell, index) in enemyField"
+            @mouseover="selectCell(cell.x, cell.y)"
+            @click="shot()"
+            :class="cell.type"
+          )
+      .wrap
+        p {{ userName }}
+        .battleground
+          .cell(
+            v-for="(cell, index) in playerField"
+            :class="cell.type"
+          )
+    .row
+      button.button(@click="reconect()") Переподключиться
 </template>
 
 <script>
@@ -44,9 +48,35 @@ export default {
       }
     },
     shot () {
-      const point = this.selectedCell
-      this.$store.dispatch('shot', point)
+      if (this.yourTurn) {
+        const point = this.selectedCell
+        if (point !== {} && point.type === this.cellType.SELECTED) {
+          this.$store.dispatch('shot', { x: point.x, y: point.y })
+            .then(() => {
+              if (!this.yourTurn) {
+                this.wait()
+              }
+            })
+            .catch(err => { console.log(err) })
+        }
+      }
+    },
+    reconect () {
+      this.$store.dispatch('reconnect')
+      this.wait()
+    },
+    wait () {
+      if (!this.yourTurn) {
+        setTimeout(() => {
+          this.$store.dispatch('wait')
+          this.wait()
+        }, 1500)
+      }
     }
+  },
+
+  mounted () {
+    this.wait()
   },
 
   computed: {
@@ -58,6 +88,15 @@ export default {
     },
     cellType () {
       return this.$store.getters.cellType
+    },
+    yourTurn () {
+      return this.$store.getters.yourTurn
+    },
+    enemyName () {
+      return this.$store.getters.enemyName
+    },
+    userName () {
+      return this.$store.getters.userName
     }
   }
 }
@@ -65,17 +104,15 @@ export default {
 
 <style lang="scss" scoped>
 @import '../../assets/mixins';
+@import '../../assets/common';
 
 .row {
-  display: flex;
   flex-direction: columns;
-  flex-wrap: wrap;
-  flex-basis: 100%;
-  flex: 1;
-  align-items: center;
   justify-content: space-around;
-  width: 100%;
-  margin: 10px 0;
+}
+
+.wrap {
+  margin: 5px;
 }
 
 .battleground {
@@ -98,6 +135,7 @@ export default {
     &.closed { background-color: red; }
     &.blocked { background-color: rgb(250, 74, 103); }
     &.missed { background-color: pink; }
+    &.intact { background-color: greenyellow; }
   }
 }
 

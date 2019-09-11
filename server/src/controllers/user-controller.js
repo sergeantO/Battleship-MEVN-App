@@ -1,4 +1,4 @@
-const sender = require('./common')
+const sender = require('./sender')
 const User = require('../models/user')
 const jwt = require("jsonwebtoken")
 const JWT_KEY = require('../config').JWT_KEY
@@ -17,27 +17,6 @@ exports._get_rand_user = () => {
 
 exports._get_one_user = (userId) => {
   return User.findById(userId)
-    .exec()
-    .then(user => user)
-    .catch(err => sender(res).error(err))
-}
-
-exports._user_is_online = (userId) => {
-  return User.findByIdAndUpdate(userId, { status: 'online'})
-    .exec()
-    .then(user => user)
-    .catch(err => sender(res).error(err))
-}
-
-exports._user_is_offline = (userId) => {
-  return User.findByIdAndUpdate(userId, { status: 'offline'})
-    .exec()
-    .then(user => user)
-    .catch(err => sender(res).error(err))
-}
-
-exports._user_is_played = (userId) => {
-  return User.findByIdAndUpdate(userId, { status: 'played'})
     .exec()
     .then(user => user)
     .catch(err => sender(res).error(err))
@@ -84,18 +63,23 @@ exports.signup = (req, res) => {
 
 exports.login = async(req, res) => {
   const userId = req.userData.userId
-  const user = await UsersController._get_one_user(userId)
-  const response = {
-    id: user._id,
-    name: user.name,
-    winrate: Math.round(user.wins * 100 / user.games) 
-  }
-  return sender(res).created('User data', response)
-}
-
-exports.logout = async(req, res) => {
-  const userId = req.userData.userId
-  return _user_is_offline(userId)
+  User.findById(userId)
+    .exec()
+    .then(user => {
+      let winrate
+      if (user.games == 0) {
+        winrate = 50
+      } else {
+        winrate = Math.round(user.wins * 100 / user.games)
+      }
+      const response = {
+        id: user._id,
+        name: user.name,
+        winrate: winrate
+      }
+      return sender(res).ok('User data', response)
+    })
+    .catch(err => sender(res).error(err))
 }
 
 exports.get_all = (req, res) => {

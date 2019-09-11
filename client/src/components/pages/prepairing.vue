@@ -123,7 +123,9 @@ export default {
         })
         // count unplacedShips
         this.currentTypeShip.left -= 1
-        this._setShipType()
+        if (this.currentTypeShip.left === 0) {
+          this._setShipType()
+        }
       }
     },
 
@@ -141,12 +143,8 @@ export default {
     },
 
     randomSetup () {
-      let count = 0
+      this._setShipType()
       while (!this.canStart) {
-        count++
-        if (count > 999) {
-          return
-        }
         let x = Math.round(Math.random() * 10)
         let y = Math.round(Math.random() * 10)
         if (Math.round(Math.random())) {
@@ -154,7 +152,6 @@ export default {
         }
         this.selectCells(x, y)
         this.placeShip(x, y)
-        console.log(count)
       }
     },
 
@@ -174,7 +171,10 @@ export default {
     startGame () {
       this.$store.dispatch('startGame')
         .then(() => this.$router.replace('/game'))
-        .catch(err => console.log(err))
+        .catch(err => {
+          // setTimeout(this.startGame(), 3000)
+          console.log(err)
+        })
     }
   },
 
@@ -198,7 +198,9 @@ export default {
 
   mounted () {
     // INIT BUTTLEGROUND
+    this.$store.dispatch('login')
     this.$store.dispatch('initFields')
+    this.$store.dispatch('setMessage', 'Для поворота корабля используйте колесико мыши')
   }
 }
 </script>
