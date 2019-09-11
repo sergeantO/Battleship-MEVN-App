@@ -19,8 +19,7 @@ app.use("/game", require("./routes/game"))
 
 // Erorrs
 app.use((req, res, next) => {
-  const error = new Error('Not Found');
-  console.log(req.path)
+  const error = new Error('Path not found');
   error.status = 404
   next(error)
 })
