@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken")
-const JWT_KEY = require('../config').JWT_KEY
+const JWT_KEY = require('config').JWT_KEY
+const send = require('../helpers/sender')
 
 module.exports = (req, res, next) => {
   try {
@@ -8,9 +9,6 @@ module.exports = (req, res, next) => {
     req.userData = decoded
     next()
   } catch(error) {
-    console.log('Access denied\n'+req.body)
-    return res.status(401).json({
-      message: 'Auth failed'
-    })
+    return send(res).unauthorized()
   }
 }

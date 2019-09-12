@@ -1,7 +1,7 @@
-const sender = require('./sender')
+const sender = require('../helpers/sender')
 const User = require('../models/user')
 const jwt = require("jsonwebtoken")
-const JWT_KEY = require('../config').JWT_KEY
+const JWT_KEY = require('config').JWT_KEY
 
 exports._get_rand_user = () => {
   return User.aggregate([
@@ -12,14 +12,39 @@ exports._get_rand_user = () => {
         return user[0]
       }
     })
-    .catch(err => sender(res).error(err))
+    .catch(err => sender(res).error('Error', err))
 }
 
 exports._get_one_user = (userId) => {
   return User.findById(userId)
     .exec()
     .then(user => user)
-    .catch(err => sender(res).error(err))
+    .catch(err => sender(res).error('Error', err))
+}
+
+_create_new_user = (res, userName) => {
+  const newUser = new User({
+    name: userName
+  })
+  newUser.save()
+    .then(result => {
+      const token = jwt.sign({
+        userId:result._id,
+        name: result.name,
+      }, 
+      JWT_KEY,
+      {
+        expiresIn: "365d"
+      })
+      const response = {
+        id: result._id,
+        name: result.name,
+        winrate: Math.round(result.wins * 100 / result.games) || 50
+      }
+
+      return sender(res).created('User is created', {user: response, token: token})
+    })
+    .catch(err => sender(res).error('Error', err))
 }
 
 exports.signup = (req, res) => {
@@ -35,30 +60,9 @@ exports.signup = (req, res) => {
         return sender(res).badRequest('User name can\'t empty')
       }
 
-      const newUser = new User({
-        name: userName
-      })
-      newUser.save()
-        .then(result => {
-          const token = jwt.sign({
-            userId:result._id,
-            name: result.name,
-          }, 
-          JWT_KEY,
-          {
-            expiresIn: "365d"
-          })
-          const response = {
-            id: result._id,
-            name: result.name,
-            winrate: Math.round(result.wins * 100 / result.games) 
-          }
-
-          return sender(res).created('User is created', {user: response, token: token})
-        })
-        .catch(err => sender(res).error(err))
-      
+      _create_new_user(res, userName)
     })
+    .catch(err => sender(res).error('Error', err))
 }
 
 exports.login = async(req, res) => {
@@ -79,14 +83,14 @@ exports.login = async(req, res) => {
       }
       return sender(res).ok('User data', response)
     })
-    .catch(err => sender(res).error(err))
+    .catch(err => sender(res).error('Error', err))
 }
 
 exports.get_all = (req, res) => {
   User.find({ name : req.body.name })
   .exec()
   .then(user => {
-      sender(res).ok('User list', { user: user })
+      sender(res).ok('User list', { users: user })
     })
-    .catch(err => sender(res).error(err))
+    .catch(err => sender(res).error('Error', err))
 }

@@ -1,4 +1,4 @@
-const sender = require('./sender')
+const sender = require('../helpers/sender')
 const Game = require('../models/game')
 // const UsersController = require('./user-controller')
 
@@ -149,13 +149,9 @@ exports.shot = async(req, res) => {
     } 
   }
 
-  console.log(`Игрок ${playerNumber} (${userId}) ${shotResault} в точке ${point}`)
-  console.log(`Ход игрока ${turn}`)
-  console.log('Новые данные: '+updateData)
   Game.findByIdAndUpdate(gameId, updateData)
     .exec()
     .then(resault => {
-      console.log('Изменения сохранены')
       const resp = { 
         point: newPoint, 
         turn: turn == playerNumber 

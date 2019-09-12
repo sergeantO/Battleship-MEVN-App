@@ -1,19 +1,23 @@
-const express = require('express')
-const bodyParser = require('body-parser')
-const cors = require('cors')
-const morgan = require('morgan')
-const mongoose = require('mongoose')
-const config = require('./config').server
+const log = require('./helpers/loger')
+let express = require('express')
+let bodyParser = require('body-parser')
+let cors = require('cors')
+let morgan = require('morgan')
+let mongoose = require('mongoose')
+let config = require('config')
 mongoose.Promise = global.Promise
 
-const app = express()
+let app = express(config)
 
-app.use(morgan('combined'))
+// hide logs in test enviroment
+if(config.util.getEnv('NODE_ENV') !== 'test') {
+  app.use(morgan('combined')); 
+}
 app.use(bodyParser.json())
 app.use(cors())
 
 // Routes
-app.get("/", require("./routes/base"));
+app.get("/", require("./routes/endpoints"));
 app.use("/user", require("./routes/user"))
 app.use("/game", require("./routes/game"))
 
@@ -34,11 +38,14 @@ app.use((error, req, res, next) => {
 })
 
 // Start Server
-mongoose.connect(config.dbURL, config.dbOptions)
-mongoose.connection
+mongoose.connect(config.server.dbURL, config.server.dbOptions)
+let db = mongoose.connection
   .once('open', () => {
-    console.log(`Mongoose - successful connection ...`)
-    app.listen(process.env.PORT || config.port,
-      () => console.log(`Server start on adress http://localhost:${config.port} ...`))
+    log(`Mongoose - successful connection ...`)
+    const port = process.env.PORT || config.server.port
+    app.listen(port,
+      () => log(`Server start on adress http://localhost:${port} ...`))
   })
-  .on('error', error => console.warn(error))
+  .on('error', (err) => { log('connection error:' + err)} )
+
+  module.exports = app; // for testing

@@ -1,14 +1,21 @@
+const config = require('config')
+const log = require('./loger')
+
 let sender = (res) => {
   let send = (status, resp) => {
-    console.log(`=========== ${status} ============`)
-    console.log(resp)
-    console.log('============================')
+    log(`=========== ${status} ============`)
+    log(resp)
+    log(`============================`)
 
     res.status(status).json(resp)
   }
   
-  let error = (err) => {
-    send(500, { message: err })
+  let unauthorized = () => {
+    send(401, { message: 'Access denied' })
+  }
+
+  let error = (msg, err) => {
+    send(500, { message: msg, ...err })
   }
 
   let badRequest = (msg, data = null) => {
@@ -32,7 +39,8 @@ let sender = (res) => {
     ok, 
     created, 
     badRequest, 
-    notFound
+    notFound,
+    unauthorized
   }
 }
 

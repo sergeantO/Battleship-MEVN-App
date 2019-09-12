@@ -1,0 +1,14 @@
+{
+  "server": {
+    "port": 8081,
+    "dbURL": "mongodb://localhost/buttleship-test",
+    "dbOptions": { 
+      "useNewUrlParser": true, 
+      "useFindAndModify": false, 
+      "useCreateIndex": true,
+      "keepAlive": true, 
+      "keepAliveInitialDelay": 300000
+    }
+  },
+  "JWT_KEY": "secret"
+}
