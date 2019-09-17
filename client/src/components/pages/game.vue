@@ -18,7 +18,14 @@
             :class="cell.type"
           )
     .row
-      button.button(@click="reconect()") Переподключиться
+      button.button(
+        @click="reconect()"
+        v-if="yourTurn !== null"
+        ) Переподключиться
+      button.button(
+        v-if="yourTurn === null"
+        @click="exit()"
+        ) Выйти
 </template>
 
 <script>
@@ -26,7 +33,8 @@ export default {
   name: 'prepairing',
   data () {
     return {
-      selectedCell: {}
+      selectedCell: {},
+      canShoot: true
     }
   },
 
@@ -48,16 +56,12 @@ export default {
       }
     },
     shot () {
-      if (this.yourTurn) {
+      if (this.yourTurn && this.canShoot) {
         const point = this.selectedCell
         if (point !== {} && point.type === this.cellType.SELECTED) {
+          this.canShoot = false
           this.$store.dispatch('shot', { x: point.x, y: point.y })
-            .then(() => {
-              if (!this.yourTurn) {
-                this.wait()
-              }
-            })
-            .catch(err => { console.log(err) })
+            .then(() => { this.canShoot = true })
         }
       }
     },
@@ -66,17 +70,16 @@ export default {
       this.wait()
     },
     wait () {
-      if (!this.yourTurn) {
-        setTimeout(() => {
+      setTimeout(() => {
+        if (!this.yourTurn) {
           this.$store.dispatch('wait')
           this.wait()
-        }, 1500)
-      }
+        }
+      }, 1500)
+    },
+    exit () {
+      this.$router.replace('/')
     }
-  },
-
-  mounted () {
-    this.wait()
   },
 
   computed: {
@@ -97,6 +100,20 @@ export default {
     },
     userName () {
       return this.$store.getters.userName
+    }
+  },
+
+  watch: {
+    yourTurn (newValue, oldValue) {
+      if (newValue === false) {
+        this.wait()
+      }
+    }
+  },
+
+  mounted () {
+    if (!this.yourTurn) {
+      this.wait()
     }
   }
 }
@@ -130,12 +147,12 @@ export default {
     flex: 0 0 20%;
     align-self: center;
 
-    &.empty{ background-color: #fff; }
-    &.selected { background-color: green; }
-    &.closed { background-color: red; }
-    &.blocked { background-color: rgb(250, 74, 103); }
-    &.missed { background-color: pink; }
-    &.intact { background-color: greenyellow; }
+    &.closed { background-color: rgb(187, 35, 35); }
+    &.missed { background-color: rgb(75, 91, 95); }
+
+    &.empty{ background-color: rgb(170, 238, 255); }
+    &.intact, &.selected { background-color: rgb(90, 90, 90); }
+    &.blocked { background-color: rgb(241, 135, 153) ; }
   }
 }
 

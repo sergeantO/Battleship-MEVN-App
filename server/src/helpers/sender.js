@@ -5,7 +5,6 @@ let sender = (res) => {
   let send = (status, resp) => {
     log(`=========== ${status} ============`)
     log(resp)
-    log(`============================`)
 
     res.status(status).json(resp)
   }

@@ -185,8 +185,10 @@ exports.shot = async(req, res) => {
 }
 
 exports.waitTurn = async(req, res) => { 
+  
   const gameId = req.params.gameId
   const game = await _get_one_game(gameId)
+  
 
   if (game.winner) {
     sender(res).ok('you lose')
@@ -213,10 +215,11 @@ exports.waitTurn = async(req, res) => {
         playerShots,
         turn: game.turn == playerNumber
       }
-      const message = ''
+      let message = ''
       if (game.turn != playerNumber) {
         message = 'wait'
       }
+      console.log('ghjdfk')
       return sender(res).ok(message, resp)
     })
     .catch(err => sender(res).error(err))

@@ -6,7 +6,9 @@
         @click="selectedShipType=index"
         v-if="ship.left") {{ ship.name }} (осталось {{ship.left}})
 
-    .row
+    .row(
+      v-if="!findingGame"
+    )
       button.button(
         @click="rotateShip(0,0)"
         v-if="!canStart && selectedShipType !== 3"
@@ -41,6 +43,7 @@ export default {
   data () {
     return {
       canStart: false,
+      findingGame: false,
       playerShips: [],
       selectedCells: [],
       selectedShipType: 0,
@@ -170,11 +173,8 @@ export default {
 
     startGame () {
       this.$store.dispatch('startGame')
-        .then(() => this.$router.replace('/game'))
-        .catch(err => {
-          // setTimeout(this.startGame(), 3000)
-          console.log(err)
-        })
+      this.canStart = false
+      this.findingGame = true
     }
   },
 
@@ -193,6 +193,15 @@ export default {
     },
     cellType () {
       return this.$store.getters.cellType
+    },
+    yourTurn () {
+      return this.$store.getters.yourTurn
+    }
+  },
+
+  watch: {
+    yourTurn (newValue, oldValue) {
+      this.$router.replace('/game')
     }
   },
 
@@ -211,6 +220,7 @@ export default {
 
 .battleground {
   width: 502px;
+  min-width: 502px;
   height: 502px;
   border: 1px solid #aaa;
   border-radius: 7px;
@@ -224,10 +234,10 @@ export default {
     flex: 0 0 20%;
     align-self: center;
 
-    &.empty{ background-color: #fff; }
-    &.selected { background-color: green; }
-    &.closed { background-color: red; }
-    &.blocked { background-color: pink; }
+    &.empty{ background-color: rgb(187, 241, 255); }
+    &.closed, &.selected { background-color: rgb(90, 90, 90); }
+    &.blocked { background-color: rgb(245, 138, 158); }
+
   }
 }
 

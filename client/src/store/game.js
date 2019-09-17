@@ -16,7 +16,7 @@ export default {
     enemyField: [],
     woundedShip: [],
     gameID: localStorage.getItem('gameID') || '',
-    turn: false,
+    turn: null,
     message: '',
     enemyName: 'Противник'
   },
@@ -60,6 +60,13 @@ export default {
       state.playerField.forEach(element => {
         element.type = state.cellType.EMPTY
       })
+      state.playerField = []
+      state.enemyField = []
+      state.woundedShip = []
+      state.gameID = localStorage.getItem('gameID') || ''
+      state.turn = null
+      state.message = ''
+      state.enemyName = 'Противник'
     },
     setGameID: (state, gameID) => {
       state.gameID = gameID
@@ -74,6 +81,7 @@ export default {
       }
     },
     shotOnPlayerField (state, points) {
+      console.log(points)
       points.forEach(point => {
         const pnt = state.playerField.filter(cell => {
           return cell.y === point.y && cell.x === point.x
@@ -86,10 +94,6 @@ export default {
           case 'killed':
           case 'wounded':
             pnt.type = state.cellType.BLOCKED
-            break
-          case 'win':
-            state.gameID = ''
-            localStorage.removeItem('gameID')
             break
         }
       })
@@ -120,7 +124,7 @@ export default {
     setMessage: (state, message) => { state.message = message }
   },
   actions: {
-    initFields ({commit, state}) {
+    initFields ({commit}) {
       commit('initPlayerField')
       commit('initEnemyField')
     },
@@ -128,40 +132,78 @@ export default {
     rotateShip: ({commit}) => { commit('rotateShip') },
     setPlayerShips: ({commit}, playerShipList) => { commit('setPlayerShips', playerShipList) },
     setMessage: ({commit}, message) => { commit('setMessage', message) },
-    async startGame ({commit, state, rootState}) {
+    async startGame ({commit, state, dispatch}) {
       try {
         const response = await api().post('game/find/', state.playerShipList)
-        console.log(response.data)
         commit('clearBlockedCells')
         commit('setGameID', response.data.gameID)
-        commit('setTurn', response.data.turn)
+        if (response.data.message === 'The game is created. Wait second player') {
+          commit('setMessage', 'Ждем второго игрока')
+          dispatch('waitEnemy')
+        } else {
+          commit('setTurn', response.data.turn)
+        }
       } catch (err) {
         console.log(err)
         return Promise.reject(err)
       }
     },
+    async waitEnemy ({ commit, state, dispatch }) {
+      const response = await api().get(`game/waitEnemy/${state.gameID}`)
+      if (response.data.message === 'wait') {
+        setTimeout(() => {
+          dispatch('waitEnemy')
+        }, 2000)
+      } else {
+        commit('setTurn', response.data.turn)
+      }
+    },
     async reconnect ({commit, state}) {
       if (state.gameID !== '') {
         commit('setMessage', 'Переподключаемся')
+        commit('reset')
         const response = await api().get(`game/reconnect/${state.gameID}`)
         console.log(response.data)
         commit('initPlayerField')
         commit('initEnemyField')
+        const playerShipList = response.data.playerShips
+        console.log(playerShipList)
+        commit('setPlayerShips', [...playerShipList])
+        commit('shotOnPlayerField', response.data.enemyShots)
+        // enemyShots: Array [ {…} ]
       }
     },
-    async shot ({commit, state}, point) {
+    async shot ({commit, state, dispatch}, point) {
       if (state.turn) {
         const response = await api().post(`game/shot/${state.gameID}`, point)
         console.log(response.data)
-        commit('shotOnEnemyField', response.data.point)
-        commit('setTurn', response.data.turn)
+        if (response.data.message === 'you win') {
+          dispatch('gameEnd', true)
+        } else {
+          commit('shotOnEnemyField', response.data.point)
+          commit('setTurn', response.data.turn)
+        }
       }
     },
-    async wait ({commit, state}) {
-      const response = await api().get(`game/wait/${state.gameID}`)
+    async wait ({commit, state, dispatch}) {
+      const response = await api().get(`game/waitTurn/${state.gameID}`)
       console.log(response.data)
-      commit('setTurn', response.data.turn)
-      commit('shotOnPlayerField', response.data.playerShots)
+      if (response.data.message === 'you lose') {
+        dispatch('gameEnd', false)
+      } else {
+        commit('setTurn', response.data.turn)
+        commit('shotOnPlayerField', response.data.playerShots)
+      }
+    },
+    gameEnd ({commit}, winner) {
+      commit('setTurn', null)
+      localStorage.removeItem('gameID')
+      commit('setGameID', '')
+      if (winner) {
+        commit('setMessage', 'Победа')
+      } else {
+        commit('setMessage', 'Поражение')
+      }
     }
   },
   getters: {
