@@ -4,6 +4,8 @@ The implementation of the battleship game.
 
 FullStack Single Page Application (SPA) using MEVN stack (MongoDB, Express, Vue JS, and Node.js)
 
+![](./images/Screenshot.png)
+
 ## how to instal
 1. instal [MongoDB](https://www.mongodb.com/download-center/community)
 2. instal [Node.JS](https://nodejs.org/en/)
