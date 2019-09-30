@@ -30,6 +30,6 @@ $ npm install
     `$ cd client & npm start`
     
 9. (optional, instead of points 6-8) instal [ConEmu](http://conemu.ru/ru/) and run dev.bat
-(./images/ConEmuTabs.png)
+![](./images/ConEmuTabs.png)
 10. ???
 11. PROFIT
